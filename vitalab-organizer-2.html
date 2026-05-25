@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vitalab · Organizador Diario</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sage: #7a8c6e;
+    --sage-light: #a8b89a;
+    --sage-pale: #dce6d4;
+    --sage-ultra: #f0f4ed;
+    --gold: #c9a96e;
+    --gold-light: #e2c99a;
+    --gold-pale: #f5ead6;
+    --cream: #faf7f2;
+    --bark: #5c4f3a;
+    --bark-light: #8a7a62;
+    --done-bg: #edf3e8;
+    --done-text: #7a8c6e;
+    --coral: #e8846a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Jost', sans-serif;
+    background: var(--cream);
+    min-height: 100vh;
+    color: var(--bark);
+  }
+
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 15% 20%, rgba(169,184,154,0.18) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 75%, rgba(201,169,110,0.12) 0%, transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    padding: 40px 0 30px;
+    border-bottom: 1px solid rgba(201,169,110,0.3);
+    margin-bottom: 32px;
+  }
+
+  .logo-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 8px;
+  }
+
+  .logo-svg {
+    width: 52px;
+    height: 44px;
+  }
+
+  .brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    letter-spacing: 0.18em;
+    color: var(--bark);
+  }
+
+  .brand span {
+    color: var(--coral);
+  }
+
+  .owner-line {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    font-weight: 300;
+    font-style: normal;
+    letter-spacing: 0.1em;
+    color: var(--bark-light);
+    margin-top: 6px;
+    margin-bottom: 2px;
+  }
+  .owner-line em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .date-line {
+    font-size: 0.78rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--bark-light);
+    margin-top: 4px;
+  }
+
+  /* PROGRESS */
+  .progress-section {
+    background: white;
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 28px;
+    border: 1px solid rgba(201,169,110,0.2);
+    box-shadow: 0 2px 20px rgba(90,79,58,0.06);
+  }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+  }
+
+  .progress-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--bark);
+    letter-spacing: 0.04em;
+  }
+
+  .progress-count {
+    font-size: 0.78rem;
+    color: var(--bark-light);
+    letter-spacing: 0.08em;
+  }
+
+  .progress-bar-bg {
+    height: 8px;
+    background: var(--sage-pale);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--sage), var(--gold));
+    border-radius: 100px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0%;
+  }
+
+  .progress-pct {
+    font-size: 0.72rem;
+    color: var(--sage);
+    letter-spacing: 0.1em;
+    margin-top: 8px;
+    text-align: right;
+  }
+
+  /* CLOCK */
+  .clock-widget {
+    background: linear-gradient(135deg, var(--sage) 0%, #5a6e50 100%);
+    border-radius: 16px;
+    padding: 22px 28px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: white;
+    box-shadow: 0 4px 24px rgba(122,140,110,0.35);
+  }
+
+  .clock-time {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.6rem;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    line-height: 1;
+  }
+
+  .clock-seconds {
+    font-size: 1.2rem;
+    opacity: 0.7;
+    vertical-align: super;
+  }
+
+  .clock-info {
+    text-align: right;
+  }
+
+  .clock-day {
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+
+  .next-task-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    opacity: 0.65;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  .next-task-name {
+    font-size: 0.85rem;
+    opacity: 0.95;
+    margin-top: 2px;
+    font-weight: 400;
+  }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 32px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(201,169,110,0.4), transparent);
+  }
+
+  /* TASK CARD */
+  .task-card {
+    background: white;
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(201,169,110,0.15);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.35s ease;
+    box-shadow: 0 1px 12px rgba(90,79,58,0.04);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .task-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--sage-light), var(--gold-light));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .task-card:hover { box-shadow: 0 4px 20px rgba(90,79,58,0.1); transform: translateY(-1px); }
+  .task-card:hover::before { opacity: 1; }
+
+  .task-card.done {
+    background: var(--done-bg);
+    border-color: rgba(122,140,110,0.2);
+    box-shadow: none;
+  }
+
+  .task-card.done::before { opacity: 1; background: var(--sage); width: 4px; }
+  .task-card.done:hover { transform: none; }
+
+  .task-card.active {
+    border-color: rgba(201,169,110,0.45);
+    box-shadow: 0 4px 24px rgba(201,169,110,0.18);
+  }
+  .task-card.active::before { opacity: 1; background: var(--gold); }
+
+  .task-icon {
+    font-size: 1.5rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--sage-ultra);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+
+  .task-card.done .task-icon { background: rgba(122,140,110,0.15); }
+  .task-card.active .task-icon { background: var(--gold-pale); }
+
+  .task-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .task-name {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--bark);
+    letter-spacing: 0.02em;
+    transition: color 0.3s;
+  }
+
+  .task-card.done .task-name {
+    color: var(--done-text);
+    text-decoration: line-through;
+    text-decoration-color: rgba(122,140,110,0.5);
+  }
+
+  .task-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .task-time {
+    font-size: 0.72rem;
+    color: var(--bark-light);
+    letter-spacing: 0.08em;
+  }
+
+  .task-duration {
+    font-size: 0.68rem;
+    background: var(--sage-pale);
+    color: var(--sage);
+    padding: 2px 8px;
+    border-radius: 100px;
+    letter-spacing: 0.06em;
+  }
+
+  .task-card.done .task-duration {
+    background: rgba(122,140,110,0.15);
+    color: var(--done-text);
+  }
+
+  .alarm-badge {
+    font-size: 0.62rem;
+    background: var(--gold-pale);
+    color: var(--gold);
+    padding: 2px 8px;
+    border-radius: 100px;
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .task-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  /* DONE BUTTON */
+  .btn-done {
+    background: none;
+    border: 1.5px solid var(--sage-light);
+    color: var(--sage);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+
+  .btn-done:hover {
+    background: var(--sage);
+    color: white;
+    border-color: var(--sage);
+  }
+
+  .done-check {
+    display: none;
+    color: var(--sage);
+    font-size: 1.3rem;
+    line-height: 1;
+  }
+
+  .task-card.done .btn-done { display: none; }
+  .task-card.done .done-check { display: block; }
+
+  /* ALARM TOAST */
+  .alarm-toast {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-120px);
+    background: linear-gradient(135deg, var(--bark) 0%, #3d3325 100%);
+    color: white;
+    padding: 18px 28px;
+    border-radius: 16px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+    z-index: 1000;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-align: center;
+    min-width: 280px;
+    border-top: 3px solid var(--gold);
+  }
+
+  .alarm-toast.show { transform: translateX(-50%) translateY(0); }
+
+  .toast-icon { font-size: 1.8rem; margin-bottom: 6px; }
+  .toast-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    color: var(--gold-light);
+  }
+  .toast-msg { font-size: 0.8rem; opacity: 0.8; margin-top: 3px; letter-spacing: 0.04em; }
+  .toast-close {
+    margin-top: 12px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 5px 18px;
+    border-radius: 100px;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toast-close:hover { background: rgba(255,255,255,0.2); }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(201,169,110,0.2);
+  }
+
+  footer p {
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--bark-light);
+    opacity: 0.6;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--cream); }
+  ::-webkit-scrollbar-thumb { background: var(--sage-light); border-radius: 10px; }
+
+  @media (max-width: 500px) {
+    .clock-time { font-size: 2rem; }
+    .task-card { padding: 14px 16px; gap: 12px; }
+    .brand { font-size: 1.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="alarm-toast" id="alarmToast">
+  <div class="toast-icon" id="toastIcon">⏰</div>
+  <div class="toast-title" id="toastTitle">Alarma</div>
+  <div class="toast-msg" id="toastMsg"></div>
+  <button class="toast-close" onclick="closeAlarm()">Cerrar</button>
+</div>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-wrap">
+      <!-- Vitalab SVG logo recreated -->
+      <svg class="logo-svg" viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 18 L52 82 L72 42" stroke="#e8846a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M72 42 Q72 18 92 18 Q112 18 112 38 Q112 58 92 68 Q78 76 72 82 Q66 76 52 68" stroke="#e8846a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M83 35 Q83 28 90 28 Q96 28 96 35 Q96 42 90 47 Q84 42 83 35Z" stroke="#e8846a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div class="brand">VITA<span>LAB</span></div>
+    </div>
+    <div class="owner-line">Organizador diario para <em>Sergio Devece</em> · Verano 2026</div>
+    <div class="date-line" id="dateDisplay">—</div>
+  </header>
+
+  <!-- CLOCK -->
+  <div class="clock-widget">
+    <div>
+      <div class="clock-day" id="clockDay">Lunes</div>
+      <div class="clock-time" id="clockTime">00:00<span class="clock-seconds" id="clockSec">:00</span></div>
+    </div>
+    <div class="clock-info">
+      <div class="next-task-label">Próxima tarea</div>
+      <div class="next-task-name" id="nextTaskName">—</div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-section">
+    <div class="progress-header">
+      <span class="progress-label">Progreso del día</span>
+      <span class="progress-count" id="progressCount">0 / 14 tareas</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-pct" id="progressPct">0%</div>
+  </div>
+
+  <!-- MAÑANA -->
+  <div class="section-title">Mañana</div>
+
+  <div class="task-card" id="task-0" data-alarm="07:30">
+    <div class="task-icon">⏰</div>
+    <div class="task-body">
+      <div class="task-name">Despertar</div>
+      <div class="task-meta">
+        <span class="task-time">07:30</span>
+        <span class="alarm-badge">🔔 Alarma</span>
+      </div>
+    </div>
+    <div class="task-right">
+      <button class="btn-done" onclick="markDone(0)">Realizado</button>
+      <span class="done-check">✓</span>
+    </div>
+  </div>
+
+  <div class="task-card" id="task-1" data-alarm="08:00">
+    <div class="task-icon">🥣</div>
+    <div class="task-body">
+      <div class="task-name">Desayuno</div>
+      <div class="task-meta">
+        <span class="task-time">08:00</span>
+        <span class="alarm-badge">🔔 Alarma</span>
+      </div>
+    </div>
+    <div class="task-right">
+      <button class="btn-done" onclick="markDone(1)">Realizado</button>
+      <span class="done-check">✓</span>
+    </div>
+  </div>
+
+  <div class="task-card" id="task-2" data-alarm="08:15">
+    <div class="task-icon">🧘</div>
+    <div class="task-body">
+      <div class="task-name">Estiramientos y Meditación</div>
+      <div class="task-meta">
+        <span class="task-time">08:15</span>
+        <span class="task-duration">30 min</span>
+        <span class="alarm-badge">🔔 Alarma</span>
+      </div>
+    </div>
+    <div class="task-right">
+      <button class="btn-done" onclick="markDone(2)">Realizado</button>
+      <span class="done-check">✓</span>
+    </div>
+  </div>
+
+  <div class="task-card" id="task-3" data-alarm="08:45">
+    <div class="task-icon">💪</div>
+    <div class="task-body">
+      <div class="task-name">Ejercicio</div>
+      <div class="task-meta">
+        <span class="task-time">08:45</span>
+        <span class="task-duration">30 min</span>
+        <span class="alarm-badge">🔔 Alarma</span>
+      </div>
+    </div>
+    <div class="task-right">
+      <button class="btn-done" onclick="markDone(3)">Realizado</button>
+      <span class="done-check">✓</span>
+    </div>
+  </div>
+
+  <div class="task-card" id="task-4" data-alarm="09:15">
+    <div class="task-icon">🐍</div>
+    <div class="task-body">
+      <div class="task-name">Estudio · Python</div>
+      <div class="task-meta">
+        <span class="task-time">09:15</span>
+        <span class="task-duration">1h 30 min</span>
+        <span class="alarm-badge">🔔 Alarma</span>
+      </div>
+    </div>
+    <div class="task-right">
+      <button class="btn-done" onclick="markDone(4)">Realizado</button>
+      <span class="done-check">✓</span>
+    </div>
+  </div>
+
+  <div class="task-card" id="task-5" data-alarm="10:45">
+    <div class="task-icon">🔐</div>
+    <div class="task-body">
+      <div class="task-name">Estudio · Ciberseguridad</div>
+      <div class="task-meta">
+        <span class="task-time">10:45</span>
+        <span class="task-duration">30 min</span>
+        <span class="alarm-badge">🔔 Alarma</span>
+      </div>
+    </div>
+    <div class="task-right">
+      <button class="btn-done" onclick="markDone(5)">Realizado</button>
+      <span class="done-check">✓</span>
+    </div>
+  </div>
+
+  <div class="task-card" id="task-6" data-alarm="11:00">
+    <div class="task-icon">🥗</div>
+    <div class="task-body">
+      <div class="task-name">Almuerzo</div>
+      <div class="task-meta">
+        <span class="task-time">11:00</span>
+        <span class="alarm-badge">🔔 Alarma</span>
+      </div>
+    </div>
+    <div class="task-right">
+      <button class="btn-done" onclick="markDone(6)">Realizado</button>
+      <span class="done-check">✓</span>
+    </div>
+  </div>
+
+  <!-- MEDIODÍA -->
+  <div class="section-title">Mediodía</div>
+
+  <div class="task-card" id="task-7" data-alarm="11:30">
+    <div class="task-icon">🧹</div>
+    <div class="task-body">
+      <div class="task-name">Limpieza y Orden</div>
+      <div class="task-meta">
+        <span class="task-time">11:30</span>
+        <span class="task-duration">2 horas</span>
+        <span class="alarm-badge">🔔 Alarma</span>
+      </div>
+    </div>
+    <div class="task-right">
+      <button class="btn-done" onclick="markDone(7)">Realizado</button>
+      <span class="done-check">✓</span>
+    </div>
+  </div>
+
+  <div class="task-card" id="task-8" data-alarm="14:00">
+    <div class="task-icon">😴</div>
+    <div class="task-body">
+      <div class="task-name">Descanso</div>
+      <div class="task-meta">
+        <span class="task-time">14:00</span>
+        <span class="task-duration">1 hora</span>
+        <span class="alarm-badge">🔔 Alarma</span>
+      </div>
+    </div>
+    <div class="task-right">
+      <button class="btn-done" onclick="markDone(8)">Realizado</button>
+      <span class="done-check">✓</span>
+    </div>
+  </div>
+
+  <div class="task-card" id="task-9" data-alarm="15:00">
+    <div class="task-icon">🍽️</div>
+    <div class="task-body">
+      <div class="task-name">Comida</div>
+      <div class="task-meta">
+        <span class="task-time">15:00</span>
+        <span class="alarm-badge">🔔 Alarma</span>
+      </div>
+    </div>
+    <div class="task-right">
+      <button class="btn-done" onclick="markDone(9)">Realizado</button>
+      <span class="done-check">✓</span>
+    </div>
+  </div>
+
+  <!-- TARDE -->
+  <div class="section-title">Tarde</div>
+
+  <div class="task-card" id="task-10" data-alarm="15:30">
+    <div class="task-icon">🤖</div>
+    <div class="task-body">
+      <div class="task-name">Trabajar con IA</div>
+      <div class="task-meta">
+        <span class="task-time">15:30</span>
+        <span class="task-duration">Sin límite</span>
+        <span class="alarm-badge">🔔 Alarma</span>
+      </div>
+    </div>
+    <div class="task-right">
+      <button class="btn-done" onclick="markDone(10)">Realizado</button>
+      <span class="done-check">✓</span>
+    </div>
+  </div>
+
+  <!-- NOCHE -->
+  <div class="section-title">Noche</div>
+
+  <div class="task-card" id="task-11" data-alarm="19:00">
+    <div class="task-icon">📚</div>
+    <div class="task-body">
+      <div class="task-name">Ocio · Lectura e Internet</div>
+      <div class="task-meta">
+        <span class="task-time">19:00</span>
+        <span class="alarm-badge">🔔 Alarma</span>
+      </div>
+    </div>
+    <div class="task-right">
+      <button class="btn-done" onclick="markDone(11)">Realizado</button>
+      <span class="done-check">✓</span>
+    </div>
+  </div>
+
+  <div class="task-card" id="task-12" data-alarm="23:00">
+    <div class="task-icon">🗑️</div>
+    <div class="task-body">
+      <div class="task-name">Bajar Basura y Recoger</div>
+      <div class="task-meta">
+        <span class="task-time">23:00</span>
+        <span class="alarm-badge">🔔 Alarma</span>
+      </div>
+    </div>
+    <div class="task-right">
+      <button class="btn-done" onclick="markDone(12)">Realizado</button>
+      <span class="done-check">✓</span>
+    </div>
+  </div>
+
+  <div class="task-card" id="task-13" data-alarm="23:45">
+    <div class="task-icon">🌙</div>
+    <div class="task-body">
+      <div class="task-name">Descanso y Relajación</div>
+      <div class="task-meta">
+        <span class="task-time">23:45</span>
+        <span class="alarm-badge">🔔 Alarma</span>
+      </div>
+    </div>
+    <div class="task-right">
+      <button class="btn-done" onclick="markDone(13)">Realizado</button>
+      <span class="done-check">✓</span>
+    </div>
+  </div>
+
+  <div class="task-card" id="task-14" data-alarm="00:30">
+    <div class="task-icon">💤</div>
+    <div class="task-body">
+      <div class="task-name">Dormir</div>
+      <div class="task-meta">
+        <span class="task-time">00:30</span>
+        <span class="alarm-badge">🔔 Alarma</span>
+      </div>
+    </div>
+    <div class="task-right">
+      <button class="btn-done" onclick="markDone(14)">Realizado</button>
+      <span class="done-check">✓</span>
+    </div>
+  </div>
+
+  <footer>
+    <p>Vitalab · Organización personal · Tu mejor versión cada día</p>
+  </footer>
+</div>
+
+<script>
+  const TOTAL_TASKS = 15;
+  const tasks = Array.from({length: TOTAL_TASKS}, (_, i) => ({
+    id: i,
+    done: false,
+    alarm: document.getElementById(`task-${i}`)?.dataset.alarm,
+    name: document.getElementById(`task-${i}`)?.querySelector('.task-name')?.textContent,
+  }));
+
+  const alarmIcons = {
+    0: '⏰', 1: '🥣', 2: '🧘', 3: '💪', 4: '🐍',
+    5: '🔐', 6: '🥗', 7: '🧹', 8: '😴', 9: '🍽️',
+    10: '🤖', 11: '📚', 12: '🗑️', 13: '🌙', 14: '💤'
+  };
+
+  let firedAlarms = new Set();
+  let alarmQueue = [];
+  let currentAlarm = null;
+
+  function markDone(id) {
+    tasks[id].done = true;
+    document.getElementById(`task-${id}`).classList.add('done');
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const done = tasks.filter(t => t.done).length;
+    const pct = Math.round((done / TOTAL_TASKS) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressCount').textContent = `${done} / ${TOTAL_TASKS} tareas`;
+    document.getElementById('progressPct').textContent = pct + '%';
+  }
+
+  function showAlarm(id) {
+    if (currentAlarm !== null) { alarmQueue.push(id); return; }
+    currentAlarm = id;
+    const t = tasks[id];
+    document.getElementById('toastIcon').textContent = alarmIcons[id] || '⏰';
+    document.getElementById('toastTitle').textContent = t.name || 'Alarma';
+    document.getElementById('toastMsg').textContent = `Es hora — ${t.alarm}`;
+    document.getElementById('alarmToast').classList.add('show');
+    // highlight card
+    document.getElementById(`task-${id}`)?.classList.add('active');
+    // play sound via AudioContext
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, 0.3, 0.6].forEach(delay => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = 880;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+        gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + delay + 0.05);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + delay + 0.35);
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + 0.4);
+      });
+    } catch(e) {}
+  }
+
+  function closeAlarm() {
+    document.getElementById('alarmToast').classList.remove('show');
+    if (currentAlarm !== null) {
+      document.getElementById(`task-${currentAlarm}`)?.classList.remove('active');
+    }
+    currentAlarm = null;
+    if (alarmQueue.length > 0) {
+      setTimeout(() => showAlarm(alarmQueue.shift()), 500);
+    }
+  }
+
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('clockTime').childNodes[0].textContent = `${h}:${m}`;
+    document.getElementById('clockSec').textContent = `:${s}`;
+
+    const days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+    document.getElementById('clockDay').textContent = days[now.getDay()];
+
+    // Date display
+    const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    document.getElementById('dateDisplay').textContent =
+      `${days[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]} de ${now.getFullYear()}`;
+
+    // Check alarms (hour:minute, on second :00)
+    if (now.getSeconds() === 0) {
+      const timeStr = `${h}:${m}`;
+      tasks.forEach((t, i) => {
+        if (t.alarm === timeStr && !firedAlarms.has(i)) {
+          firedAlarms.add(i);
+          showAlarm(i);
+        }
+      });
+    }
+
+    // Next task
+    const nowMins = now.getHours() * 60 + now.getMinutes();
+    let nextTask = null;
+    for (const t of tasks) {
+      if (!t.done && t.alarm) {
+        const [th, tm] = t.alarm.split(':').map(Number);
+        let taskMins = th * 60 + tm;
+        if (taskMins < nowMins) taskMins += 1440;
+        if (!nextTask || taskMins < nextTask.mins) nextTask = {name: t.name, mins: taskMins};
+      }
+    }
+    document.getElementById('nextTaskName').textContent = nextTask ? nextTask.name : 'Todo completado ✓';
+  }
+
+  // --- PERSISTENCIA localStorage ---
+  const STORAGE_KEY = 'vitalab_tasks';
+  const DATE_KEY = 'vitalab_date';
+
+  function getTodayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  }
+
+  function saveTasks() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks.map(t => t.done)));
+    localStorage.setItem(DATE_KEY, getTodayStr());
+  }
+
+  function loadTasks() {
+    // Reset automático cada nuevo día
+    if (localStorage.getItem(DATE_KEY) !== getTodayStr()) {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(DATE_KEY);
+      return;
+    }
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    saved.forEach((done, i) => {
+      if (done && tasks[i]) {
+        tasks[i].done = true;
+        document.getElementById(`task-${i}`)?.classList.add('done');
+      }
+    });
+  }
+
+  // Envolver markDone para que guarde al marcar
+  const _markDone = markDone;
+  window.markDone = function(id) {
+    _markDone(id);
+    saveTasks();
+  };
+
+  loadTasks();
+  updateProgress();
+  updateClock();
+  setInterval(updateClock, 1000);
+</script>
+</body>
+</html>
