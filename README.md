@@ -26,6 +26,8 @@ La app permite estructurar la jornada, seguir el avance mediante una barra de pr
 
 Proyecto funcional en fase inicial de aprendizaje y mejora continua.
 
+Pruébalo: https://vitalab-organizer-devece.netlify.app/
+
 ## Aprendizajes trabajados
 
 Con este proyecto se practican conceptos como:
